@@ -1,0 +1,29 @@
+ws.read(buffer); // The buffer we wait to recieve full is actullay looks like that if we use that commadn to print
+
+            std::cout << "Raw Buffer: " << boost::beast::buffers_to_string(buffer.data()) << std::endl;
+
+output:
+    
+SUCCESS: Handshake complete. Watching live data...
+Raw Buffer: {"e":"aggTrade","E":1778289999771,"s":"BTCUSDT","a":3953638670,"p":"80259.55000000","q":"0.00008000","f":6283271595,"l":6283271595,"T":1778289999771,"m":false,"M":true}
+Raw Buffer: {"e":"aggTrade","E":1778290001590,"s":"BTCUSDT","a":3953638671,"p":"80259.54000000","q":"0.00012000","f":6283271596,"l":6283271596,"T":1778290001589,"m":true,"M":true}
+Price: 80259.54000000 | Qty: 0.00012000
+Messages/sec: 2
+
+// output ends 
+
+my wrriten notes:
+    simdjson can do fast execution but it can creat segmentation fault if data is end of memery allocated because simdjson pick about 32 byte of 64 byte to handle crash so we do padded_string it add bull at end so never segmentation fault
+
+1. Why we do padded_string
+
+The simdjson library achieves extreme speeds by using SIMD (Single Instruction, Multiple Data) instructions, which process multiple bytes of data simultaneously (e.g., 32 or 64 bytes at a time).
+
+    The Safety Problem: To be fast, SIMD instructions often "over-read." They might read 32 bytes even if only 5 bytes are left in your JSON string.
+
+    The Crash Risk: If your JSON string ends exactly at the boundary of a memory page and the CPU tries to read past it into "unallocated" memory, your program will crash with a Segmentation Fault.
+
+    The Solution: padded_string ensures there are always extra null bytes at the end of the data, creating a "safety zone" for the SIMD hardware to read into without hitting protected memory.
+
+
+
